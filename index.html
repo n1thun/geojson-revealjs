@@ -1,49 +1,219 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Geo Json in MongoDB</title>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+	<title>Geo Spatial Data in MongoDB - Nithun</title>
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/black.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Geo Json</section>
-				<section>Slide 2</section>
-			</div>
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+
+			<section>
+				<h2>Geo Spatial Data in MongoDB</h2>
+				<h3>SE 591 SE Studio ii</h3>
+				<p>
+					<small>Created by <a href="http://www.nithun.com">Nithun Harikrishnan</a> / <a href="http://twitter.com/nithun">@nithun</a></small>
+				</p>
+			</section>
+
+			<section>
+				<h2>What is Mongo DB?</h2>
+				<ul>
+					<li>Mongo DB is a open-source NoSQL based document  database</li>
+					<li>Data is stored in flexible, JSON-like documents</li>
+					<li>MonogoDB is a distributed database at its core, So its highly scalable</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>What is GeoJson?</h2>
+				<ul>
+					<li>GeoJSON is a format for encoding a variety of geographic data structures</li>
+					<li>GeoJSON extends JSON with a "geometry" section so that you can define coordinates for the particular objects</li>
+					<li>GeoJSON supports the following geometry types: Point, LineString, Polygon, MultiPoint, MultiLineString, and MultiPolygon</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Why GeoJson + MongoDB</h2>
+				<ul>
+					<li>We needed a way to store and retrieve location data for Two2er</li>
+					<li>It enables us to perform location based queries like "How many people are in this area?"</li>
+					<li>MongoDB has native support for GeoJson</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Legacy 2D points</h2>
+				<p>How coordinates are usually stored in Json</p>
+				<pre><code class="hljs" data-trim contenteditable>
+					{
+						name: {f: "Tom", l: "Miko"},
+						favPets: ["Cat", "Dog"],
+						house: [-12.34145, 34.45641]
+					}
+
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>GeoJSON points</h2>
+				<p>How they are stored as GeoJson objects</p>
+				<pre><code class="hljs" data-trim contenteditable>
+					{
+						name: {f: "Tom", l: "Miko"},
+						favPets: ["Cat", "Dog"],
+						house: {
+							type: "Point",
+							coordinates: [-12.34145, 34.45641]
+						}
+					}
+
+				</code></pre>
+				<p>Its very similar to regular Json, but adds a lot of abilities</p>
+			</section>
+
+			<section>
+				<h2>Setup</h2>
+				<ul>
+					<li>Add google play services to build.gradle file</li>
+					<li>Add permissions to AndroidManifest.xml file</li>
+					<li>Add API key to AndroidManifest.xml file</li>
+					<li>Specify requirement for OpenGL ES version 2</li>
+				</ul>
+			</section>
+
+			<!-- <section>
+				<h2>Misc Setup</h2>
+				<ul>
+					<li>Google play Services</li>
+					<li>API 25 and above have a granular permissions, which are requested only when required and not during firstrun</li>
+					<li>Add Map fragmement</li>
+				</ul>
+			</section> -->
+
+
+			<section>
+				<h2>Add map fragment to layout</h2>
+					<img data-src="img/frag_layout.png">
+			</section>
+
+
+
+
+			<section>
+				<h2>Legacy 2D points</h2>
+				<p>Get handle by calling fragment manager</p>
+				<pre><code class="hljs" data-trim contenteditable>
+					{
+						name: {f: "Tom", l: "Miko"},
+						favPets: ["Cat", "Dog"],
+						house: [-12.34145, 34.45641]
+					}
+
+				</code></pre>
+				<p>Register for the map callback using getMapAsync()</p>
+			</section>
+
+			<section>
+				<h2>Your map is ready</h2>
+					<img data-src="img/basic_map.png" height="450">
+			</section>
+
+
+			<section>
+				<h2>Adding a marker</h2>
+				<pre><code class="hljs" data-trim contenteditable>
+					@Override
+			    public void onMapReady(GoogleMap googleMap) {
+
+			        LatLng washington = new LatLng(-33.852, 151.211);
+			        googleMap.addMarker(new MarkerOptions().position(washington)
+			                .title("Washigton"));
+			        googleMap.moveCamera(CameraUpdateFactory.newLatLng(washington));
+			    }
+				</code></pre>
+			</section>
+
+			<section>
+				<h2>Map with marker</h2>
+					<img data-src="img/map_wash.png" height="450">
+			</section>
+
+			<section>
+				<h2>Info window</h2>
+					<img data-src="img/map_info.png" height="450">
+			</section>
+
+			<section>
+				<h2>Heat map</h2>
+					<img data-src="img/map_heat.png" height="450">
+			</section>
+
+			<section>
+				<h2>More features</h2>
+				<ul>
+					<li>Geo positioning</li>
+					<li>3d Maps</li>
+					<li>Custom styles</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Questions?</h2>
+			</section>
+
 		</div>
+	</div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.js"></script>
 
-		<script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+	<script>
+		// More info https://github.com/hakimel/reveal.js#configuration
+		Reveal.initialize({
+			history: true,
+
+			// More info https://github.com/hakimel/reveal.js#dependencies
+			dependencies: [{
+					src: 'plugin/markdown/marked.js'
+				},
+				{
+					src: 'plugin/markdown/markdown.js'
+				},
+				{
+					src: 'plugin/notes/notes.js',
+					async: true
+				},
+				{
+					src: 'plugin/highlight/highlight.js',
+					async: true,
+					callback: function() {
+						hljs.initHighlightingOnLoad();
+					}
+				}
+			]
+		});
+	</script>
+</body>
+
 </html>
