@@ -45,7 +45,7 @@
 			</section>
 
 			<section>
-				<h2>What is GeoJson?</h2>
+				<h2>What is GeoJSON?</h2>
 				<ul>
 					<li>GeoJSON is a format for encoding a variety of geographic data structures</li>
 					<li>GeoJSON extends JSON with a "geometry" section so that you can define coordinates for the particular objects</li>
@@ -54,132 +54,146 @@
 			</section>
 
 			<section>
-				<h2>Why GeoJson + MongoDB</h2>
+				<h2>Why GeoJSON + MongoDB</h2>
 				<ul>
 					<li>We needed a way to store and retrieve location data for Two2er</li>
-					<li>It enables us to perform location based queries like "How many people are in this area?"</li>
-					<li>MongoDB has native support for GeoJson</li>
+					<li>It enables us to perform GeoSpatial filtering and queries like "How many people are in this area?"</li>
+					<li>MongoDB has native support for GeoJSON</li>
 				</ul>
 			</section>
 
 			<section>
-				<h2>Legacy 2D points</h2>
+				<h2>GeoJSON Structure</h2>
+				<ul>
+					<li>GeoJSON objects represent a geometry, a feature or a collection of features</li>
+					<li>GeoJSON	is a collection of name/value pairs called members</li>
+					<li>A member with name "type" must contain a GeoJSON geometry type (ex: Point)</li>
+					<li>A member with name "coordinates" must be an array</li>
+				</ul>
+			</section>
+
+			<section>
+				<h2>Legacy 2D point</h2>
 				<p>How coordinates are usually stored in Json</p>
 				<pre><code class="hljs" data-trim contenteditable>
 					{
-						name: {f: "Tom", l: "Miko"},
-						favPets: ["Cat", "Dog"],
-						house: [-12.34145, 34.45641]
+						name: "Morris Park Bake Shop",
+						loc: [-73.856077, 40.848447]
 					}
-
 				</code></pre>
 			</section>
 
 			<section>
-				<h2>GeoJSON points</h2>
-				<p>How they are stored as GeoJson objects</p>
+				<h2>GeoJSON point</h2>
+				<p>How they are stored as GeoJSON objects</p>
 				<pre><code class="hljs" data-trim contenteditable>
 					{
-						name: {f: "Tom", l: "Miko"},
-						favPets: ["Cat", "Dog"],
-						house: {
-							type: "Point",
-							coordinates: [-12.34145, 34.45641]
+					   location: {
+					      type: "Point",
+					      coordinates: [-73.856077, 40.848447]
+					   },
+					   name: "Morris Park Bake Shop"
+					}
+				</code></pre>
+				<img height="230" data-src="https://docs.mongodb.com/manual/_images/geospatial-single-point.png">
+			</section>
+
+			<section>
+				<h3>GeoJSON Polygon</h3>
+				<pre><code class="hljs" data-trim contenteditable>
+					{
+					   geometry: {
+					      type: "Polygon",
+					      coordinates: [[
+					         [ -73.99, 40.75 ],
+					         ...
+					         [ -73.99, 40.75 ]
+					      ]]
+					    },
+					    name: "Hell's Kitchen"
+					}
+				</code></pre>
+				<img height="230" data-src="https://docs.mongodb.com/manual/_images/geospatial-polygon-hells-kitchen.png">
+			</section>
+
+			<section>
+				<h2>Using GeoSpatial queries</h2>
+				<ul>
+					<li>Geospatial queries can use either flat or spherical geometries, depending on both the query and the type of index in use.</li>
+					<li>Queries using spherical geometries will be more performant and accurate with a 2dsphere index</li>
+					<li>Queries need a geospatial index, create one using:</li>
+					<pre><code class="hljs" data-trim contenteditable>
+						collection.createIndex({loc:"2dsphere"})
+					</code></pre>
+				</ul>
+			</section>
+
+			<section>
+				<h2>$near</h2>
+				<p>It returns the points closest to the defined point and sorts the results by distance</p>
+				<pre><code class="hljs" data-trim contenteditable>
+					db.places.find( {location:
+					{ $near :
+						{
+							$geometry: { type: "Point",
+							coordinates: [ -73.9667, 40.78 ] },
+							$minDistance: 1000,
+							$maxDistance: 5000
 						}
-					}
-
+					}})
 				</code></pre>
-				<p>Its very similar to regular Json, but adds a lot of abilities</p>
 			</section>
 
 			<section>
-				<h2>Setup</h2>
-				<ul>
-					<li>Add google play services to build.gradle file</li>
-					<li>Add permissions to AndroidManifest.xml file</li>
-					<li>Add API key to AndroidManifest.xml file</li>
-					<li>Specify requirement for OpenGL ES version 2</li>
-				</ul>
-			</section>
-
-			<!-- <section>
-				<h2>Misc Setup</h2>
-				<ul>
-					<li>Google play Services</li>
-					<li>API 25 and above have a granular permissions, which are requested only when required and not during firstrun</li>
-					<li>Add Map fragmement</li>
-				</ul>
-			</section> -->
-
-
-			<section>
-				<h2>Add map fragment to layout</h2>
-					<img data-src="img/frag_layout.png">
-			</section>
-
-
-
-
-			<section>
-				<h2>Legacy 2D points</h2>
-				<p>Get handle by calling fragment manager</p>
+				<h2>$geoWithin</h2>
+				<p>You can also query to find all objects contained in a given region.</p>
 				<pre><code class="hljs" data-trim contenteditable>
-					{
-						name: {f: "Tom", l: "Miko"},
-						favPets: ["Cat", "Dog"],
-						house: [-12.34145, 34.45641]
-					}
+					var neighborhood = db.neighborhoods.findOne(
+					{ geometry:
+						{ $geoIntersects: { $geometry: {
+							type: "Point",
+							coordinates: [ -73.93414657, 40.82302903 ] } }
+					 } } )
 
-				</code></pre>
-				<p>Register for the map callback using getMapAsync()</p>
-			</section>
-
-			<section>
-				<h2>Your map is ready</h2>
-					<img data-src="img/basic_map.png" height="450">
-			</section>
-
-
-			<section>
-				<h2>Adding a marker</h2>
-				<pre><code class="hljs" data-trim contenteditable>
-					@Override
-			    public void onMapReady(GoogleMap googleMap) {
-
-			        LatLng washington = new LatLng(-33.852, 151.211);
-			        googleMap.addMarker(new MarkerOptions().position(washington)
-			                .title("Washigton"));
-			        googleMap.moveCamera(CameraUpdateFactory.newLatLng(washington));
-			    }
+					db.restaurants.find(
+					{ location: { $geoWithin: { $geometry: neighborhood.geometry } } }
+					)
 				</code></pre>
 			</section>
 
-			<section>
-				<h2>Map with marker</h2>
-					<img data-src="img/map_wash.png" height="450">
-			</section>
 
 			<section>
-				<h2>Info window</h2>
-					<img data-src="img/map_info.png" height="450">
+				<h2>Objects in an area using $geowithin</h2>
+					<img data-src="https://docs.mongodb.com/manual/_images/geospatial-all-restaurants.png" height="450">
 			</section>
 
-			<section>
-				<h2>Heat map</h2>
-					<img data-src="img/map_heat.png" height="450">
-			</section>
 
 			<section>
-				<h2>More features</h2>
+				<h2>More Queries</h2>
 				<ul>
-					<li>Geo positioning</li>
-					<li>3d Maps</li>
-					<li>Custom styles</li>
+					<li>$geoSearch - Performs a geospatial query that uses MongoDB’s haystack index functionality</li>
+					<li>$geoIntersects - Selects geometries that intersect with a GeoJSON geometry</li>
+					<li>$nearSphere	- Returns geospatial objects in proximity to a point on a sphere</li>
 				</ul>
 			</section>
 
 			<section>
-				<h2>Questions?</h2>
+				<h2>Bounding boxes</h2>
+				<ul>
+					<li>Bounding boxes is a rectangle surounding a certain geographic feature</li>
+					<li>These members are named as "bbox"</li>					
+				</ul>
+
+				<img data-src="img\bbox.png" alt="Bounding box world">
+			</section>
+
+			<section>
+				<h2>Support + Tools</h2>
+				<ul>
+					<li>leaflet.js - an open-source JavaScript library for interactive maps with native geoJson support</li>
+					<li>geojson.io - Tool to test and view GeoJSON data</li>
+					<li>Github - Also lets you view geoJSON if the file is in .geojson format</li>
+				</ul>
 			</section>
 
 		</div>
